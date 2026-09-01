@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบสอบออนไลน์ | Online Examination System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --brand:#4f46e5; --brand-d:#4338ca; --brand-l:#eef2ff;
+  --teal:#0891b2; --green:#16a34a; --amber:#d97706; --red:#dc2626;
+  --bg:#f4f6fb; --card:#fff; --line:#e5e7eb; --txt:#1f2937; --muted:#6b7280;
+  --sh:0 1px 3px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
+img{max-width:100%}
+button,input,select,textarea{font-family:inherit;font-size:14px}
+.view{display:none} .view.active{display:block}
+.hide{display:none!important}
+
+/* ---------- Buttons ---------- */
+.btn{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.15s;background:#eef2f7;color:#334155;white-space:nowrap}
+.btn:hover{transform:translateY(-1px);filter:brightness(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--brand),#6d28d9);color:#fff;box-shadow:0 4px 14px rgba(79,70,229,.3)}
+.btn.teal{background:linear-gradient(135deg,var(--teal),#0e7490);color:#fff}
+.btn.green{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff}
+.btn.amber{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.btn.red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.btn.ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.btn.outline{background:#fff;border:1px solid var(--line);color:#374151}
+.btn.lg{padding:14px 22px;font-size:16px;width:100%;justify-content:center}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- Forms ---------- */
+label.f{display:block;font-size:13px;font-weight:600;color:#475569;margin:12px 0 5px}
+.inp{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;background:#fff;outline:none;transition:.15s}
+.inp:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+textarea.inp{resize:vertical;min-height:70px}
+.row{display:flex;gap:12px;flex-wrap:wrap} .row>*{flex:1;min-width:150px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:22px}
+.chk{display:flex;align-items:center;gap:9px;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;font-size:14px;font-weight:500}
+.chk input{width:17px;height:17px;accent-color:var(--brand);cursor:pointer}
+
+/* ---------- Landing ---------- */
+.topbar{background:linear-gradient(120deg,#4338ca,#6d28d9 55%,#0891b2);color:#fff;padding:14px 5vw;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .lg{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:24px;overflow:hidden;flex:none}
+.brand .lg img{width:100%;height:100%;object-fit:cover}
+.brand h1{font-size:19px;font-weight:700;line-height:1.2}
+.brand p{font-size:12.5px;opacity:.85}
+.hero{background:linear-gradient(120deg,#4338ca,#6d28d9 55%,#0891b2);padding:40px 5vw 90px;color:#fff}
+.hero-wrap{max-width:1120px;margin:auto;display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+.hero h2{font-size:40px;font-weight:700;line-height:1.25;margin-bottom:14px}
+.hero p.sub{font-size:16px;opacity:.92;margin-bottom:22px}
+.feat{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;font-size:14.5px}
+.feat span{background:rgba(255,255,255,.2);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none}
+.exam-card{background:#fff;color:var(--txt);border-radius:20px;padding:30px;box-shadow:0 20px 50px rgba(0,0,0,.22)}
+.exam-card h3{font-size:22px;margin-bottom:4px}
+.exam-card .m{color:var(--muted);font-size:13.5px;margin-bottom:6px}
+.open-list{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px;max-height:150px;overflow:auto}
+.open-item{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px dotted #eef1f5;cursor:pointer}
+.open-item:hover{color:var(--brand)}
+.foot{background:#111827;color:#9ca3af;text-align:center;padding:22px;font-size:13px}
+.wave{height:60px;background:var(--bg);border-radius:60px 60px 0 0;margin-top:-60px;position:relative}
+
+/* ---------- Teacher ---------- */
+.tlayout{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.side{background:#111827;color:#cbd5e1;padding:18px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+.side .logo{color:#fff;font-weight:700;padding:8px 10px 18px;font-size:16px;display:flex;gap:9px;align-items:center}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{background:none;border:0;color:#cbd5e1;text-align:left;padding:11px 13px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;display:flex;gap:10px;align-items:center}
+.nav button:hover{background:#1f2937;color:#fff}
+.nav button.on{background:linear-gradient(135deg,var(--brand),#6d28d9);color:#fff;font-weight:600}
+.main{padding:24px 26px 60px;max-width:1400px}
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.mhead h2{font-size:24px}.mhead .m{color:var(--muted);font-size:13.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.stat{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sh);border-left:4px solid var(--brand)}
+.stat.g{border-color:var(--green)}.stat.a{border-color:var(--amber)}.stat.t{border-color:var(--teal)}.stat.r{border-color:var(--red)}
+.stat .lbl{font-size:12.5px;color:var(--muted);font-weight:600}
+.stat .val{font-size:28px;font-weight:700;margin-top:2px}
+.panel{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:18px}
+.panel h3{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{background:#f8fafc;text-align:left;padding:11px 10px;font-weight:600;color:#475569;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:hover td{background:#fafbff}
+.tw{overflow-x:auto}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.tag.g{background:#dcfce7;color:#15803d}.tag.r{background:#fee2e2;color:#b91c1c}
+.tag.b{background:#e0e7ff;color:#4338ca}.tag.a{background:#fef3c7;color:#b45309}
+.tag.n{background:#f1f5f9;color:#64748b}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.empty .ic{font-size:44px;opacity:.35;display:block;margin-bottom:6px}
+
+/* ---------- Modal / Toast ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(3px);display:none;z-index:900;padding:20px;overflow:auto}
+.overlay.on{display:flex;align-items:flex-start;justify-content:center}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:640px;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:pop .2s ease}
+.modal.wide{max-width:960px}
+@keyframes pop{from{transform:translateY(14px);opacity:0}}
+.mh{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.mh h3{font-size:18px}
+.mb{padding:22px;max-height:70vh;overflow:auto}
+.mf{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.x{background:none;border:0;font-size:24px;cursor:pointer;color:#94a3b8;line-height:1}
+#toasts{position:fixed;top:18px;right:18px;z-index:1000;display:flex;flex-direction:column;gap:9px}
+.toast{background:#fff;border-left:4px solid var(--brand);padding:13px 18px;border-radius:10px;box-shadow:0 8px 26px rgba(0,0,0,.16);font-size:14px;font-weight:500;animation:pop .2s;max-width:330px}
+.toast.g{border-color:var(--green)}.toast.r{border-color:var(--red)}.toast.a{border-color:var(--amber)}
+
+/* ---------- Exam runtime ---------- */
+.ebar{background:#fff;box-shadow:var(--sh);padding:12px 5vw;display:flex;justify-content:space-between;align-items:center;gap:14px;position:sticky;top:0;z-index:50;flex-wrap:wrap}
+.timer{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;background:var(--brand-l);color:var(--brand-d);padding:6px 16px;border-radius:10px}
+.timer.warn{background:#fee2e2;color:#b91c1c;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.55}}
+.ewrap{max-width:1080px;margin:22px auto 60px;padding:0 18px;display:grid;grid-template-columns:1fr 210px;gap:20px;align-items:start}
+.qcard{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:14px}
+.qno{display:inline-block;background:var(--brand);color:#fff;font-weight:700;border-radius:8px;padding:2px 11px;font-size:13px;margin-bottom:9px}
+.qtext{font-size:16px;font-weight:500;margin-bottom:13px;white-space:pre-wrap}
+.opt{display:flex;gap:11px;align-items:flex-start;padding:11px 14px;border:1.5px solid var(--line);border-radius:11px;margin-bottom:8px;cursor:pointer;transition:.13s}
+.opt:hover{border-color:var(--brand);background:var(--brand-l)}
+.opt.sel{border-color:var(--brand);background:var(--brand-l);font-weight:600}
+.opt input{accent-color:var(--brand);margin-top:4px;flex:none}
+.opt.ok{border-color:var(--green);background:#f0fdf4}
+.opt.bad{border-color:var(--red);background:#fef2f2}
+.palette{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px;position:sticky;top:86px}
+.pgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 14px}
+.pgrid button{aspect-ratio:1;border:1.5px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px}
+.pgrid button.done{background:var(--brand);color:#fff;border-color:var(--brand)}
+.score-hero{max-width:640px;margin:50px auto;text-align:center}
+.circle{width:190px;height:190px;border-radius:50%;margin:0 auto 20px;display:grid;place-items:center;color:#fff;box-shadow:0 14px 40px rgba(0,0,0,.18)}
+.circle .n{font-size:46px;font-weight:700;line-height:1}
+.qedit{border:1.5px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px;background:#fcfcfd}
+.qedit .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.choice-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.choice-row input[type=radio]{accent-color:var(--green);width:18px;height:18px;flex:none}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+.mobnav{display:none}
+
+@media(max-width:900px){
+  .hero-wrap{grid-template-columns:1fr;gap:26px}.hero h2{font-size:30px}
+  .tlayout{grid-template-columns:1fr}
+  .side{position:relative;height:auto;padding:12px}.side .logo{padding-bottom:10px}
+  .nav{flex-direction:row;overflow-x:auto;gap:6px}.nav button{white-space:nowrap;font-size:13px;padding:9px 12px}
+  .ewrap{grid-template-columns:1fr}.palette{position:relative;top:0;order:-1}
+  .main{padding:18px 14px 50px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== LANDING ===================== -->
+<div id="view-landing" class="view active">
+  <div class="topbar">
+    <div class="brand">
+      <div class="lg" id="lgHome">🎓</div>
+      <div><h1 id="nameHome">โรงเรียนตัวอย่างวิทยา</h1><p>ระบบสอบออนไลน์ · Online Examination System</p></div>
+    </div>
+    <button class="btn ghost" onclick="openLogin()">🔐 เข้าสู่ระบบ (สำหรับครู)</button>
+  </div>
+
+  <div class="hero">
+    <div class="hero-wrap">
+      <div>
+        <h2>สอบออนไลน์<br>ง่าย ปลอดภัย รู้ผลทันที</h2>
+        <p class="sub">กรอกรหัสนักเรียนและรหัสวิชาที่ต้องการสอบ แล้วกดปุ่ม “เข้าสอบ” ได้เลย</p>
+        <div class="feat"><span>⏱️</span><div>จับเวลาอัตโนมัติ ส่งข้อสอบเองเมื่อหมดเวลา</div></div>
+        <div class="feat"><span>🔀</span><div>สุ่มลำดับข้อสอบและตัวเลือก ป้องกันการลอกกัน</div></div>
+        <div class="feat"><span>📊</span><div>ครูดูสถิติ กราฟคะแนน และส่งออก Excel ได้ทันที</div></div>
+      </div>
+      <div class="exam-card">
+        <h3>📝 เข้าสอบ</h3>
+        <p class="m">กรุณากรอกข้อมูลให้ถูกต้องก่อนเริ่มทำข้อสอบ</p>
+        <label class="f">รหัสนักเรียน</label>
+        <input id="inStu" class="inp" placeholder="เช่น 10001" autocomplete="off">
+        <label class="f">รหัสวิชา / รหัสข้อสอบ</label>
+        <input id="inExam" class="inp" placeholder="เช่น MATH101" autocomplete="off" style="text-transform:uppercase">
+        <div style="margin-top:18px"><button class="btn primary lg" onclick="studentEnter()">🚀 เข้าสอบ</button></div>
+        <div class="open-list" id="openList"></div>
+      </div>
+    </div>
+  </div>
+  <div class="wave"></div>
+  <div class="foot">© <span id="yr"></span> <span id="footName"></span> · ระบบสอบออนไลน์ (Single File Web App)</div>
+</div>
+
+<!-- ===================== EXAM RUNTIME ===================== -->
+<div id="view-exam" class="view">
+  <div class="ebar">
+    <div><strong id="exTitle"></strong><div class="m" style="font-size:13px;color:var(--muted)" id="exWho"></div></div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="timer" id="exTimer">--:--</div>
+      <button class="btn green" onclick="submitExam(false)">✅ ส่งข้อสอบ</button>
+    </div>
+  </div>
+  <div class="ewrap">
+    <div id="qList"></div>
+    <div class="palette">
+      <strong style="font-size:14px">ความคืบหน้า</strong>
+      <div class="hint" id="progTxt">0/0 ข้อ</div>
+      <div class="pgrid" id="pGrid"></div>
+      <button class="btn green" style="width:100%;justify-content:center" onclick="submitExam(false)">ส่งข้อสอบ</button>
+      <div class="hint" style="margin-top:8px">🔒 ห้ามออกจากหน้านี้ ระบบบันทึกการสลับแท็บ</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== STUDENT RESULT ===================== -->
+<div id="view-done" class="view"><div id="doneBox"></div></div>
+
+<!-- ===================== TEACHER ===================== -->
+<div id="view-teacher" class="view">
+  <div class="tlayout">
+    <aside class="side">
+      <div class="logo">🎓 <span id="nameSide">ระบบครู</span></div>
+      <nav class="nav" id="navBox">
+        <button data-t="dash" class="on" onclick="tab('dash')">📊 แสดงผล / ผลสอบ</button>
+        <button data-t="stu" onclick="tab('stu')">👨‍🎓 นักเรียน &amp; ห้องเรียน</button>
+        <button data-t="exam" onclick="tab('exam')">📝 จัดการข้อสอบ</button>
+        <button data-t="exp" onclick="tab('exp')">📤 ส่งออกผลสอบ</button>
+        <button data-t="cfg" onclick="tab('cfg')">🎛️ แสดงคะแนน &amp; สุ่มข้อสอบ</button>
+        <button data-t="sys" onclick="tab('sys')">🏫 ตั้งค่าระบบ</button>
+        <button onclick="logout()" style="color:#fca5a5">🚪 ออกจากระบบ</button>
+      </nav>
+    </aside>
+    <main class="main" id="tMain"></main>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalBox"></div></div>
+<div id="toasts"></div>
+<input type="file" id="filePick" class="hide" accept=".xlsx,.xls,.csv">
+<input type="file" id="logoPick" class="hide" accept="image/*">
+<input type="file" id="jsonPick" class="hide" accept=".json">
+
+<script>
+/* ================= CORE ================= */
+const $=s=>document.querySelector(s), $=s=>[...document.querySelectorAll(s)];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KEY='oes_db_v2';
+let db, editing=null, session=null, tick=null, curTab='dash';
+
+function defDB(){return{
+  settings:{school:'โรงเรียนตัวอย่างวิทยา',logo:'',user:'admin',pass:'1234',showScore:true,showAnswers:false},
+  classes:[{id:uid(),grade:'ม.1',room:'1'},{id:uid(),grade:'ม.1',room:'2'},{id:uid(),grade:'ม.2',room:'1'}],
+  students:[],exams:[],results:[]
+};}
+function load(){try{db=JSON.parse(localStorage.getItem(KEY))}catch(e){db=null}
+  if(!db||!db.settings){db=defDB();seed();save();}
+  ['classes','students','exams','results'].forEach(k=>db[k]=db[k]||[]);}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));}
+function seed(){
+  db.students=[
+    {id:uid(),code:'10001',name:'สมชาย ใจดี',grade:'ม.1',room:'1'},
+    {id:uid(),code:'10002',name:'สมหญิง เรียนเก่ง',grade:'ม.1',room:'1'},
+    {id:uid(),code:'10003',name:'ปิยะ ตั้งใจ',grade:'ม.1',room:'2'},
+    {id:uid(),code:'20001',name:'มานี รักเรียน',grade:'ม.2',room:'1'}];
+  db.exams=[{id:uid(),code:'MATH101',title:'คณิตศาสตร์ บทที่ 1 จำนวนเต็ม',subject:'คณิตศาสตร์',grade:'ม.1',
+    duration:20,start:'',end:'',passPercent:50,shuffleQ:true,shuffleC:true,showScore:true,showAnswers:true,
+    active:true,allowRetake:false,questions:[
+      {id:uid(),type:'mc',text:'ผลลัพธ์ของ (-8) + 5 มีค่าเท่าใด',choices:['-13','-3','3','13'],answer:1,score:1},
+      {id:uid(),type:'mc',text:'ผลลัพธ์ของ (-6) × (-4) มีค่าเท่าใด',choices:['-24','-10','10','24'],answer:3,score:1},
+      {id:uid(),type:'mc',text:'จำนวนเต็มลบที่มากที่สุดคือจำนวนใด',choices:['0','-1','-100','ไม่มี'],answer:1,score:1},
+      {id:uid(),type:'mc',text:'ค่าสัมบูรณ์ของ -15 คือเท่าใด',choices:['-15','0','15','30'],answer:2,score:1},
+      {id:uid(),type:'text',text:'จงหาผลลัพธ์ของ 24 ÷ (-6) (ตอบเป็นตัวเลข)',choices:[],answer:'-4',score:2}
+    ]}];
+}
+function toast(msg,t=''){const d=document.createElement('div');d.className='toast '+t;d.textContent=msg;$('#toasts').appendChild(d);setTimeout(()=>d.remove(),3200);}
+function show(v){$('.view').forEach(e=>e.classList.remove('active'));$('#view-'+v).classList.add('active');window.scrollTo(0,0);}
+function modal(title,body,footer='',wide=false){
+  $('#modalBox').className='modal'+(wide?' wide':'');
+  $('#modalBox').innerHTML=`<div class="mh"><h3>${title}</h3><button class="x" onclick="closeModal()">&times;</button></div><div class="mb">${body}</div>${footer?`<div class="mf">${footer}</div>`:''}`;
+  $('#overlay').classList.add('on');
+}
+function closeModal(){$('#overlay').classList.remove('on');}
+const pad2=n=>String(n).padStart(2,'0');
+const fmtDT=s=>{if(!s)return '-';const d=new Date(s);return isNaN(d)?'-':`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()+543} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;};
+
+/* ================= LANDING ================= */
+function paintBrand(){
+  const s=db.settings;
+  $('#nameHome').textContent=s.school; $('#footName').textContent=s.school;
+  $('#nameSide').textContent=s.school; $('#yr').textContent=new Date().getFullYear()+543;
+  $('#lgHome').innerHTML=s.logo?`<img src="${s.logo}">`:'🎓';
+}
+function examOpen(ex){
+  if(!ex.active)return{ok:false,why:'ข้อสอบนี้ยังไม่เปิดให้สอบ'};
+  const now=new Date();
+  if(ex.start&&now<new Date(ex.start))return{ok:false,why:'ยังไม่ถึงเวลาสอบ (เริ่ม '+fmtDT(ex.start)+')'};
+  if(ex.end&&now>new Date(ex.end))return{ok:false,why:'หมดเวลาสอบแล้ว (สิ้นสุด '+fmtDT(ex.end)+')'};
+  return{ok:true};
+}
+function paintOpenList(){
+  const list=db.exams.filter(e=>examOpen(e).ok);
+  $('#openList').innerHTML=list.length?
+    `<div class="hint" style="margin-bottom:4px">📌 ข้อสอบที่เปิดอยู่ (คลิกเพื่อเลือก)</div>`+
+    list.map(e=>`<div class="open-item" onclick="document.getElementById('inExam').value='${esc(e.code)}'">
+      <span><b>${esc(e.code)}</b> · ${esc(e.title)}</span><span class="tag b">${esc(e.grade||'ทุกชั้น')}</span></div>`).join('')
+    :`<div class="hint">ยังไม่มีข้อสอบที่เปิดให้สอบในขณะนี้</div>`;
+}
+function studentEnter(){
+  const sc=$('#inStu').value.trim(), ec=$('#inExam').value.trim().toUpperCase();
+  if(!sc||!ec)return toast('กรุณากรอกรหัสนักเรียนและรหัสวิชา','a');
+  const st=db.students.find(s=>s.code.toLowerCase()===sc.toLowerCase());
+  if(!st)return toast('ไม่พบรหัสนักเรียนนี้ในระบบ','r');
+  const ex=db.exams.find(e=>e.code.toUpperCase()===ec);
+  if(!ex)return toast('ไม่พบรหัสวิชา/รหัสข้อสอบนี้','r');
+  const o=examOpen(ex); if(!o.ok)return toast(o.why,'a');
+  if(!ex.questions.length)return toast('ข้อสอบนี้ยังไม่มีคำถาม','a');
+  if(ex.grade&&st.grade&&ex.grade!==st.grade&&ex.grade!=='ทุกระดับชั้น')
+    return toast(`ข้อสอบนี้สำหรับ ${ex.grade} เท่านั้น`,'a');
+  const old=db.results.find(r=>r.examId===ex.id&&r.studentCode===st.code);
+  if(old&&!ex.allowRetake)return toast('คุณทำข้อสอบวิชานี้ไปแล้ว','a');
+  modal('ยืนยันการเข้าสอบ',`
+    <div style="font-size:15px;line-height:2">
+      <div><b>ผู้เข้าสอบ:</b> ${esc(st.name)} (${esc(st.code)}) · ${esc(st.grade)}/${esc(st.room)}</div>
+      <div><b>วิชา:</b> ${esc(ex.title)} <span class="tag b">${esc(ex.code)}</span></div>
+      <div><b>จำนวนข้อ:</b> ${ex.questions.length} ข้อ · <b>คะแนนเต็ม:</b> ${totalScore(ex)} คะแนน</div>
+      <div><b>เวลาทำข้อสอบ:</b> ${ex.duration} นาที</div>
+    </div>
+    <div class="hint" style="margin-top:12px">⚠️ เมื่อกดเริ่มสอบ ระบบจะเริ่มจับเวลาทันที และจะส่งข้อสอบอัตโนมัติเมื่อหมดเวลา</div>`,
+    `<button class="btn outline" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="beginExam('${ex.id}','${st.id}')">เริ่มสอบ</button>`);
+}
+const totalScore=ex=>ex.questions.reduce((a,q)=>a+(+q.score||0),0);
+
+/* ================= EXAM RUNTIME ================= */
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function beginExam(exId,stId){
+  closeModal();
+  const ex=db.exams.find(e=>e.id===exId), st=db.students.find(s=>s.id===stId);
+  let order=ex.questions.map((q,i)=>i); if(ex.shuffleQ)order=shuffle(order);
+  const co={}; ex.questions.forEach(q=>{const idx=q.choices.map((c,i)=>i); co[q.id]=ex.shuffleC?shuffle(idx):idx;});
+  session={ex,st,order,co,answers:{},switches:0,startedAt:new Date().toISOString(),
+    endAt:Date.now()+ex.duration*60000};
+  if(ex.end){const hard=new Date(ex.end).getTime(); if(hard<session.endAt)session.endAt=hard;}
+  $('#exTitle').textContent=ex.title+' ('+ex.code+')';
+  $('#exWho').textContent=`${st.name} · ${st.code} · ${st.grade}/${st.room} · เต็ม ${totalScore(ex)} คะแนน`;
+  renderQuestions(); show('exam'); runTimer();
+  window.onbeforeunload=()=>'กำลังทำข้อสอบอยู่ ต้องการออกจริงหรือไม่?';
+  document.addEventListener('visibilitychange',onVis);
+}
+function onVis(){if(session&&document.hidden){session.switches++;toast('ตรวจพบการสลับหน้าจอ ครั้งที่ '+session.switches,'a');}}
+function renderQuestions(){
+  const {ex,order,co}=session;
+  $('#qList').innerHTML=order.map((oi,n)=>{
+    const q=ex.questions[oi];
+    const body=q.type==='mc'
+      ? co[q.id].map(ci=>`<label class="opt" id="o_${q.id}_${ci}" onclick="pick('${q.id}',${ci})">
+          <input type="radio" name="q_${q.id}"><div>${esc(q.choices[ci])}</div></label>`).join('')
+      : `<textarea class="inp" rows="3" placeholder="พิมพ์คำตอบของคุณ..." oninput="pickText('${q.id}',this.value)"></textarea>`;
+    return `<div class="qcard" id="qc_${n}">
+      <span class="qno">ข้อ ${n+1}</span> <span class="tag n">${q.type==='mc'?'ปรนัย':'อัตนัย'} · ${q.score} คะแนน</span>
+      <div class="qtext">${esc(q.text)}</div>${body}</div>`;
+  }).join('');
+  $('#pGrid').innerHTML=order.map((_,n)=>`<button id="pg_${n}" onclick="document.getElementById('qc_${n}').scrollIntoView({behavior:'smooth',block:'center'})">${n+1}</button>`).join('');
+  prog();
+}
+function pick(qid,ci){
+  session.answers[qid]=ci;
+  const q=session.ex.questions.find(x=>x.id===qid);
+  q.choices.forEach((_,i)=>{const el=$('#o_'+qid+'_'+i);if(el){el.classList.toggle('sel',i===ci);el.querySelector('input').checked=(i===ci);}});
+  prog();
+}
+function pickText(qid,v){session.answers[qid]=v.trim();prog();}
+function prog(){
+  const {order,ex}=session; let done=0;
+  order.forEach((oi,n)=>{const q=ex.questions[oi];const a=session.answers[q.id];
+    const has=(a!==undefined&&a!==''); if(has)done++;
+    const b=$('#pg_'+n); if(b)b.classList.toggle('done',has);});
+  $('#progTxt').textContent=`ทำแล้ว ${done}/${order.length} ข้อ`;
+}
+function runTimer(){
+  clearInterval(tick);
+  tick=setInterval(()=>{
+    if(!session)return clearInterval(tick);
+    const left=Math.max(0,Math.floor((session.endAt-Date.now())/1000));
+    const m=Math.floor(left/60), s=left%60;
+    const el=$('#exTimer'); el.textContent=`⏱ ${pad2(m)}:${pad2(s)}`;
+    el.classList.toggle('warn',left<=60);
+    if(left<=0){clearInterval(tick);submitExam(true);}
+  },500);
+}
+function submitExam(auto){
+  if(!session)return;
+  const {ex,st,order}=session;
+  const unanswered=ex.questions.filter(q=>session.answers[q.id]===undefined||session.answers[q.id]==='').length;
+  if(!auto&&unanswered>0&&!confirm(`ยังมี ${unanswered} ข้อที่ยังไม่ได้ตอบ ต้องการส่งข้อสอบเลยหรือไม่?`))return;
+  if(!auto&&unanswered===0&&!confirm('ยืนยันส่งข้อสอบ?'))return;
+  clearInterval(tick); window.onbeforeunload=null;
+  document.removeEventListener('visibilitychange',onVis);
+  let score=0,pending=false;
+  const details=ex.questions.map(q=>{
+    const given=session.answers[q.id]; let got=0,ok=false,review=false;
+    if(q.type==='mc'){ ok=(given===q.answer); got=ok?+q.score:0; }
+    else{
+      const key=String(q.answer||'').trim().toLowerCase();
+      const ans=String(given||'').trim().toLowerCase();
+      if(key&&ans&&ans===key){ok=true;got=+q.score;}
+      else if(ans){review=true;pending=true;}
+    }
+    score+=got;
+    return{qid:q.id,type:q.type,text:q.text,choices:q.choices,answerKey:q.answer,given:given??'',got,ok,review,max:+q.score};
+  });
+  const total=totalScore(ex), pct=total?Math.round(score/total*10000)/100:0;
+  const rec={id:uid(),examId:ex.id,examCode:ex.code,examTitle:ex.title,studentCode:st.code,studentName:st.name,
+    grade:st.grade,room:st.room,score,total,percent:pct,passed:pct>=(+ex.passPercent||50),
+    startedAt:session.startedAt,submittedAt:new Date().toISOString(),switches:session.switches,pending,details};
+  db.results=db.results.filter(r=>!(r.examId===ex.id&&r.studentCode===st.code));
+  db.results.push(rec); save();
+  showDone(rec,ex); session=null; show('done');
+}
+function showDone(r,ex){
+  const showS=ex.showScore, showA=ex.showAnswers;
+  const col=r.passed?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#f59e0b,#dc2626)';
+  let html=`<div class="score-hero">
+    <h2 style="font-size:28px;margin-bottom:6px">✅ ส่งข้อสอบเรียบร้อยแล้ว</h2>
+    <p style="color:var(--muted);margin-bottom:26px">${esc(r.studentName)} (${esc(r.studentCode)}) · ${esc(r.examTitle)}</p>`;
+  if(showS){
+    html+=`<div class="circle" style="background:${col}">
+      <div><div class="n">${r.score}</div><div style="opacity:.9">/ ${r.total} คะแนน</div></div></div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:6px">${r.percent}% · ${r.passed?'<span style="color:#16a34a">ผ่านเกณฑ์</span>':'<span style="color:#dc2626">ไม่ผ่านเกณฑ์</span>'}</div>
+      ${r.pending?'<div class="tag a">มีข้อเขียนรอครูตรวจ คะแนนอาจเปลี่ยนแปลง</div>':''}`;
+  }else{
+    html+=`<div class="circle" style="background:linear-gradient(135deg,#4f46e5,#0891b2)"><div style="font-size:52px">📮</div></div>
+      <p style="font-size:16px">ระบบได้บันทึกคำตอบของคุณแล้ว<br><span style="color:var(--muted)">ครูผู้สอนจะเป็นผู้ประกาศคะแนนภายหลัง</span></p>`;
+  }
+  if(showA&&showS){
+    html+=`<div style="text-align:left;margin-top:30px"><h3 style="margin-bottom:12px">📖 เฉลยข้อสอบ</h3>`;
+    r.details.forEach((d,i)=>{
+      let b='';
+      if(d.type==='mc'){
+        b=d.choices.map((c,ci)=>`<div class="opt ${ci===d.answerKey?'ok':(ci===d.given&&!d.ok?'bad':'')}">${esc(c)}${ci===d.answerKey?' ✔ (เฉลย)':''}${ci===d.given?' ← คำตอบของคุณ':''}</div>`).join('');
+      }else{
+        b=`<div class="opt ${d.ok?'ok':'bad'}">คำตอบของคุณ: ${esc(d.given)||'<i>ไม่ได้ตอบ</i>'}</div>
+           <div class="opt ok">เฉลย: ${esc(d.answerKey)}</div>`;
+      }
+      html+=`<div class="qcard"><span class="qno">ข้อ ${i+1}</span> <span class="tag ${d.ok?'g':'r'}">${d.got}/${d.max}</span>
+        <div class="qtext">${esc(d.text)}</div>${b}</div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`<button class="btn primary lg" style="margin-top:26px;max-width:280px" onclick="goHome()">กลับหน้าแรก</button></div>`;
+  $('#doneBox').innerHTML=html;
+}
+function goHome(){$('#inStu').value='';$('#inExam').value='';paintOpenList();show('landing');}
+
+/* ================= TEACHER AUTH ================= */
+function openLogin(){
+  modal('🔐 เข้าสู่ระบบสำหรับครู',`
+    <label class="f">ชื่อผู้ใช้</label><input id="lgU" class="inp" value="" autocomplete="username">
+    <label class="f">รหัสผ่าน</label><input id="lgP" type="password" class="inp" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password">
+    <div class="hint">ค่าเริ่มต้น: admin / 1234 (เปลี่ยนได้ในเมนูตั้งค่าระบบ)</div>`,
+    `<button class="btn outline" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="doLogin()">เข้าสู่ระบบ</button>`);
+  setTimeout(()=>$('#lgU').focus(),80);
+}
+function doLogin(){
+  const u=$('#lgU').value.trim(), p=$('#lgP').value;
+  if(u===db.settings.user&&p===db.settings.pass){closeModal();show('teacher');tab(curTab);toast('ยินดีต้อนรับคุณครู 👋','g');}
+  else toast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง','r');
+}
+function logout(){if(confirm('ออกจากระบบ?')){show('landing');paintOpenList();}}
+
+/* ================= TEACHER TABS ================= */
+function tab(t){
+  curTab=t; $('#navBox button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  ({dash:vDash,stu:vStu,exam:vExam,exp:vExp,cfg:vCfg,sys:vSys})[t]();
+  window.scrollTo(0,0);
+}
+/* ---------- 2.1 Dashboard / Results ---------- */
+let fEx='',fGr='',fRm='';
+function vDash(){
+  const rs=db.results;
+  const avg=rs.length?(rs.reduce((a,r)=>a+r.percent,0)/rs.length).toFixed(1):0;
+  const pass=rs.filter(r=>r.passed).length;
+  const passRate=rs.length?Math.round(pass/rs.length*100):0;
+  $('#tMain').innerHTML=`
+  <div class="mhead"><div><h2>📊 แสดงผลการสอบ</h2><div class="m">ภาพรวมสถิติและผลสอบรายบุคคล / รายห้อง / รายระดับชั้น</div></div>
+    <button class="btn teal" onclick="tab('exp')">📤 ส่งออก Excel</button></div>
+  <div class="stats">
+    <div class="stat"><div class="lbl">จำนวนผู้เข้าสอบ (ครั้ง)</div><div class="val">${rs.length}</div></div>
+    <div class="stat t"><div class="lbl">คะแนนเฉลี่ย</div><div class="val">${avg}%</div></div>
+    <div class="stat g"><div class="lbl">ผ่านเกณฑ์</div><div class="val">${pass} <span style="font-size:15px;color:var(--muted)">(${passRate}%)</span></div></div>
+    <div class="stat a"><div class="lbl">นักเรียนทั้งหมด</div><div class="val">${db.students.length}</div></div>
+    <div class="stat r"><div class="lbl">ข้อสอบทั้งหมด</div><div class="val">${db.exams.length}</div></div>
+  </div>
+  <div class="panel"><h3>📈 กราฟการกระจายคะแนน (%)</h3>
+    <canvas id="cv1" style="width:100%;height:230px"></canvas></div>
+  <div class="panel"><h3>🏫 คะแนนเฉลี่ยรายห้องเรียน</h3>
+    <canvas id="cv2" style="width:100%;height:220px"></canvas></div>
+  <div class="panel">
+    <h3>📋 ผลสอบรายบุคคล</h3>
+    <div class="toolbar">
+      <select class="inp" style="max-width:230px" onchange="fEx=this.value;paintTable()">
+        <option value="">— ทุกวิชา —</option>${db.exams.map(e=>`<option value="${e.id}" ${fEx===e.id?'selected':''}>${esc(e.code)} · ${esc(e.title)}</option>`).join('')}</select>
+      <select class="inp" style="max-width:160px" onchange="fGr=this.value;paintTable()">
+        <option value="">— ทุกระดับชั้น —</option>${grades().map(g=>`<option ${fGr===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+      <select class="inp" style="max-width:140px" onchange="fRm=this.value;paintTable()">
+        <option value="">— ทุกห้อง —</option>${rooms().map(r=>`<option ${fRm===r?'selected':''}>${esc(r)}</option>`).join('')}</select>
+      <input class="inp" style="max-width:200px" placeholder="🔎 ค้นหาชื่อ/รหัส" oninput="fQ=this.value;paintTable()">
+      <button class="btn red sm" onclick="clearResults()">🗑 ล้างผลสอบทั้งหมด</button>
+    </div>
+    <div class="tw" id="resTable"></div>
+  </div>`;
+  paintTable(); drawDist(); drawRoom();
+}
+let fQ='';
+const grades=()=>[...new Set([...db.students.map(s=>s.grade),...db.classes.map(c=>c.grade)])].filter(Boolean).sort();
+const rooms=()=>[...new Set([...db.students.map(s=>s.room),...db.classes.map(c=>c.room)])].filter(Boolean).sort();
+function filtered(){
+  return db.results.filter(r=>(!fEx||r.examId===fEx)&&(!fGr||r.grade===fGr)&&(!fRm||r.room===fRm)&&
+    (!fQ||r.studentName.includes(fQ)||r.studentCode.includes(fQ)))
+   .sort((a,b)=>b.percent-a.percent);
+}
+function paintTable(){
+  const rs=filtered();
+  $('#resTable').innerHTML=rs.length?`<table><thead><tr>
+    <th>#</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>ชั้น/ห้อง</th><th>วิชา</th><th>คะแนน</th><th>%</th><th>ผล</th><th>ส่งเมื่อ</th><th>สลับจอ</th><th></th></tr></thead><tbody>
+    ${rs.map((r,i)=>`<tr>
+      <td>${i+1}</td><td>${esc(r.studentCode)}</td><td>${esc(r.studentName)}${r.pending?' <span class="tag a">รอตรวจ</span>':''}</td>
+      <td>${esc(r.grade)}/${esc(r.room)}</td><td>${esc(r.examCode)}</td>
+      <td><b>${r.score}</b>/${r.total}</td><td>${r.percent}%</td>
+      <td><span class="tag ${r.passed?'g':'r'}">${r.passed?'ผ่าน':'ไม่ผ่าน'}</span></td>
+      <td>${fmtDT(r.submittedAt)}</td><td>${r.switches>0?`<span class="tag a">${r.switches}</span>`:'-'}</td>
+      <td style="white-space:nowrap"><button class="btn sm outline" onclick="viewResult('${r.id}')">👁 ดู</button>
+      <button class="btn sm red" onclick="delResult('${r.id}')">ลบ</button></td></tr>`).join('')}
+    </tbody></table>`:`<div class="empty"><span class="ic">📭</span>ยังไม่มีผลสอบตามเงื่อนไขที่เลือก</div>`;
+}
+function viewResult(id){
+  const r=db.results.find(x=>x.id===id);
+  const body=`<div style="line-height:1.9;font-size:14.5px">
+    <b>${esc(r.studentName)}</b> (${esc(r.studentCode)}) · ${esc(r.grade)}/${esc(r.room)}<br>
+    วิชา: ${esc(r.examTitle)} (${esc(r.examCode)}) · เริ่ม ${fmtDT(r.startedAt)} · ส่ง ${fmtDT(r.submittedAt)}<br>
+    คะแนน: <b style="font-size:18px">${r.score}</b> / ${r.total} (${r.percent}%) 
+    <span class="tag ${r.passed?'g':'r'}">${r.passed?'ผ่าน':'ไม่ผ่าน'}</span></div><hr style="margin:14px 0;border:0;border-top:1px solid var(--line)">
+    ${r.details.map((d,i)=>`<div class="qedit">
+      <b>ข้อ ${i+1}.</b> ${esc(d.text)} <span class="tag n">${d.max} คะแนน</span>
+      <div style="margin-top:6px;font-size:14px">
+        ตอบ: <b>${d.type==='mc'?esc(d.choices[d.given]??'ไม่ได้ตอบ'):(esc(d.given)||'ไม่ได้ตอบ')}</b><br>
+        เฉลย: ${d.type==='mc'?esc(d.choices[d.answerKey]??'-'):esc(d.answerKey)}
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+        <span class="tag ${d.got>0?'g':'r'}">ได้ ${d.got} คะแนน</span>
+        ${d.type==='text'?`<input type="number" min="0" max="${d.max}" step="0.5" value="${d.got}" class="inp" style="max-width:110px"
+          onchange="regrade('${r.id}',${i},this.value)"> <span class="hint">แก้คะแนนข้อเขียน</span>`:''}
+      </div></div>`).join('')}`;
+  modal('รายละเอียดผลสอบ',body,`<button class="btn outline" onclick="closeModal()">ปิด</button>`,true);
+}
+function regrade(rid,idx,v){
+  const r=db.results.find(x=>x.id===rid);
+  v=Math.max(0,Math.min(+r.details[idx].max,+v||0));
+  r.details[idx].got=v; r.details[idx].review=false; r.details[idx].ok=v>0;
+  r.score=r.details.reduce((a,d)=>a+d.got,0);
+  r.percent=r.total?Math.round(r.score/r.total*10000)/100:0;
+  const ex=db.exams.find(e=>e.id===r.examId);
+  r.passed=r.percent>=(+(ex?.passPercent)||50);
+  r.pending=r.details.some(d=>d.review);
+  save(); toast('บันทึกคะแนนใหม่แล้ว','g'); viewResult(rid); paintTable();
+}
+function delResult(id){if(confirm('ลบผลสอบรายการนี้?')){db.results=db.results.filter(r=>r.id!==id);save();vDash();toast('ลบแล้ว','g');}}
+function clearResults(){if(confirm('ล้างผลสอบทั้งหมด? ไม่สามารถย้อนกลับได้')){db.results=[];save();vDash();toast('ล้างผลสอบแล้ว','g');}}
+
+/* ---------- Charts (canvas ล้วน) ---------- */
+function prep(cv){const ctx=cv.getContext('2d'),dpr=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return{ctx,w,h};}
+function bars(cv,labels,vals,c1,c2,suffix=''){
+  if(!cv)return; const{ctx,w,h}=prep(cv);
+  const P={l:42,r:14,t:16,b:34}, max=Math.max(1,...vals), bw=(w-P.l-P.r)/Math.max(1,labels.length);
+  ctx.strokeStyle='#eef1f6';ctx.fillStyle='#94a3b8';ctx.font='11px Sarabun';
+  for(let i=0;i<=4;i++){const y=P.t+(h-P.t-P.b)*i/4;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(w-P.r,y);ctx.stroke();
+    ctx.textAlign='right';ctx.fillText(Math.round(max*(1-i/4)),P.l-7,y+4);}
+  labels.forEach((lb,i)=>{
+    const bh=(h-P.t-P.b)*(vals[i]/max), x=P.l+i*bw+bw*.2, y=h-P.b-bh, wdt=bw*.6;
+    const g=ctx.createLinearGradient(0,y,0,h-P.b);g.addColorStop(0,c1);g.addColorStop(1,c2);
+    ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(x,y,wdt,Math.max(bh,2),[6,6,0,0]);ctx.fill();
+    ctx.fillStyle='#475569';ctx.textAlign='center';ctx.font='11px Sarabun';
+    ctx.fillText(lb,x+wdt/2,h-P.b+16);
+    if(vals[i]>0){ctx.fillStyle='#1f2937';ctx.font='600 11px Sarabun';ctx.fillText(vals[i]+suffix,x+wdt/2,y-5);}
+  });
+}
+function drawDist(){
+  const b=[0,0,0,0,0,0], lb=['0-49','50-59','60-69','70-79','80-89','90-100'];
+  filtered().forEach(r=>{const p=r.percent;
+    b[p<50?0:p<60?1:p<70?2:p<80?3:p<90?4:5]++;});
+  bars($('#cv1'),lb,b,'#6366f1','#a5b4fc',' คน');
+}
+function drawRoom(){
+  const m={}; filtered().forEach(r=>{const k=`${r.grade}/${r.room}`;(m[k]=m[k]||[]).push(r.percent);});
+  const ks=Object.keys(m).sort();
+  bars($('#cv2'),ks.length?ks:['-'],ks.length?ks.map(k=>Math.round(m[k].reduce((a,b)=>a+b,0)/m[k].length)):[0],'#06b6d4','#67e8f9','%');
+}
+
+/* ---------- 2.2 Students & Classes ---------- */
+function vStu(){
+  $('#tMain').innerHTML=`
+  <div class="mhead"><div><h2>👨‍🎓 จัดการนักเรียน &amp; ห้องเรียน</h2><div class="m">เพิ่ม/แก้ไข/ลบ และนำเข้าจากไฟล์ Excel</div></div></div>
+  <div class="panel"><h3>🏫 ห้องเรียน</h3>
+    <div class="toolbar">
+      <input id="ngr" class="inp" style="max-width:170px" placeholder="ระดับชั้น เช่น ม.1">
+      <input id="nrm" class="inp" style="max-width:150px" placeholder="ห้อง เช่น 1">
+      <button class="btn primary sm" onclick="addClass()">➕ เพิ่มห้องเรียน</button>
+    </div>
+    <div id="clsBox" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+  <div class="panel">
+    <h3>📋 รายชื่อนักเรียน (<span id="stuCount"></span> คน)</h3>
+    <div class="toolbar">
+      <button class="btn primary sm" onclick="editStudent()">➕ เพิ่มนักเรียน</button>
+      <button class="btn green sm" onclick="tplStudents()">⬇️ ดาวน์โหลดเทมเพลต Excel</button>
+      <button class="btn teal sm" onclick="pickFile(importStudents)">📥 นำเข้าจาก Excel</button>
+      <button class="btn outline sm" onclick="exportStudents()">📤 ส่งออกรายชื่อ</button>
+      <button class="btn red sm" onclick="if(confirm('ลบนักเรียนทั้งหมด?')){db.students=[];save();vStu();}">🗑 ลบทั้งหมด</button>
+      <input class="inp" style="max-width:200px;margin-left:auto" placeholder="🔎 ค้นหา" oninput="sQ=this.value;paintStu()">
+    </div>
+    <div class="tw" id="stuTable"></div>
+  </div>`;
+  paintCls(); paintStu();
+}
+let sQ='';
+function paintCls(){
+  $('#clsBox').innerHTML=db.classes.length?db.classes.map(c=>`<span class="tag b" style="padding:7px 12px;font-size:13px">
+    ${esc(c.grade)}/${esc(c.room)} <button class="x" style="font-size:16px;color:#6366f1" onclick="delClass('${c.id}')">&times;</button></span>`).join('')
+    :`<div class="hint">ยังไม่มีห้องเรียน</div>`;
+}
+function addClass(){
+  const g=$('#ngr').value.trim(), r=$('#nrm').value.trim();
+  if(!g||!r)return toast('กรอกระดับชั้นและห้อง','a');
+  if(db.classes.some(c=>c.grade===g&&c.room===r))return toast('มีห้องนี้แล้ว','a');
+  db.classes.push({id:uid(),grade:g,room:r});save();$('#nrm').value='';paintCls();toast('เพิ่มห้องเรียนแล้ว','g');
+}
+function delClass(id){if(confirm('ลบห้องเรียนนี้?')){db.classes=db.classes.filter(c=>c.id!==id);save();paintCls();}}
+function paintStu(){
+  const list=db.students.filter(s=>!sQ||s.code.includes(sQ)||s.name.includes(sQ)||`${s.grade}/${s.room}`.includes(sQ))
+    .sort((a,b)=>a.grade.localeCompare(b.grade)||a.room.localeCompare(b.room)||a.code.localeCompare(b.code));
+  $('#stuCount').textContent=db.students.length;
+  $('#stuTable').innerHTML=list.length?`<table><thead><tr><th>#</th><th>รหัสนักเรียน</th><th>ชื่อ-สกุล</th><th>ระดับชั้น</th><th>ห้อง</th><th>สอบแล้ว</th><th></th></tr></thead><tbody>
+    ${list.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.code)}</b></td><td>${esc(s.name)}</td><td>${esc(s.grade)}</td><td>${esc(s.room)}</td>
+      <td>${db.results.filter(r=>r.studentCode===s.code).length} วิชา</td>
+      <td style="white-space:nowrap"><button class="btn sm outline" onclick="editStudent('${s.id}')">✏️</button>
+      <button class="btn sm red" onclick="delStudent('${s.id}')">🗑</button></td></tr>`).join('')}</tbody></table>`
+    :`<div class="empty"><span class="ic">👥</span>ยังไม่มีข้อมูลนักเรียน — เพิ่มเองหรือนำเข้าจาก Excel ได้เลย</div>`;
+}
+function editStudent(id){
+  const s=db.students.find(x=>x.id===id)||{code:'',name:'',grade:'',room:''};
+  modal(id?'แก้ไขนักเรียน':'เพิ่มนักเรียน',`
+    <label class="f">รหัสนักเรียน *</label><input id="sC" class="inp" value="${esc(s.code)}">
+    <label class="f">ชื่อ-สกุล *</label><input id="sN" class="inp" value="${esc(s.name)}">
+    <div class="row"><div><label class="f">ระดับชั้น</label><input id="sG" class="inp" list="dlG" value="${esc(s.grade)}">
+      <datalist id="dlG">${grades().map(g=>`<option>${esc(g)}</option>`).join('')}</datalist></div>
+      <div><label class="f">ห้อง</label><input id="sR" class="inp" list="dlR" value="${esc(s.room)}">
+      <datalist id="dlR">${rooms().map(r=>`<option>${esc(r)}</option>`).join('')}</datalist></div></div>`,
+    `<button class="btn outline" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="saveStudent('${id||''}')">บันทึก</button>`);
+}
+function saveStudent(id){
+  const o={code:$('#sC').value.trim(),name:$('#sN').value.trim(),grade:$('#sG').value.trim(),room:$('#sR').value.trim()};
+  if(!o.code||!o.name)return toast('กรอกรหัสและชื่อ-สกุล','a');
+  if(db.students.some(s=>s.code===o.code&&s.id!==id))return toast('รหัสนักเรียนซ้ำ','r');
+  if(id)Object.assign(db.students.find(s=>s.id===id),o); else db.students.push({id:uid(),...o});
+  save();closeModal();paintStu();paintCls();toast('บันทึกแล้ว','g');
+}
+function delStudent(id){if(confirm('ลบนักเรียนคนนี้?')){db.students=db.students.filter(s=>s.id!==id);save();paintStu();}}
+
+/* ---------- Excel helpers ---------- */
+function pickFile(cb){const f=$('#filePick');f.value='';f.onchange=e=>{const file=e.target.files[0];if(!file)return;
+  const rd=new FileReader();rd.onload=ev=>{try{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+    cb(rows);}catch(err){toast('อ่านไฟล์ไม่สำเร็จ: '+err.message,'r');}};
+  rd.readAsArrayBuffer(file);};f.click();}
+const pick=(row,keys)=>{for(const k of keys){for(const rk in row){if(rk.trim().toLowerCase()===k.toLowerCase()&&String(row[rk]).trim()!=='')return String(row[rk]).trim();}}return'';};
+function xlsx(rows,sheet,file){const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=Object.keys(rows[0]||{}).map(k=>({wch:Math.max(12,k.length+4)}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,sheet);XLSX.writeFile(wb,file);}
+function tplStudents(){
+  xlsx([{'รหัสนักเรียน':'10001','ชื่อ-สกุล':'สมชาย ใจดี','ระดับชั้น':'ม.1','ห้อง':'1'},
+        {'รหัสนักเรียน':'10002','ชื่อ-สกุล':'สมหญิง เรียนเก่ง','ระดับชั้น':'ม.1','ห้อง':'2'}],
+    'รายชื่อนักเรียน','เทมเพลต_นำเข้านักเรียน.xlsx');
+  toast('ดาวน์โหลดเทมเพลตแล้ว','g');
+}
+function importStudents(rows){
+  let add=0,upd=0,skip=0;
+  rows.forEach(r=>{
+    const code=pick(r,['รหัสนักเรียน','code','student_code','รหัส']);
+    const name=pick(r,['ชื่อ-สกุล','ชื่อ - สกุล','ชื่อ','name','fullname']);
+    const grade=pick(r,['ระดับชั้น','ชั้น','grade','level']);
+    const room=pick(r,['ห้อง','room','class']);
+    if(!code||!name){skip++;return;}
+    const ex=db.students.find(s=>s.code===code);
+    if(ex){Object.assign(ex,{name,grade,room});upd++;}
+    else{db.students.push({id:uid(),code,name,grade,room});add++;}
+    if(grade&&room&&!db.classes.some(c=>c.grade===grade&&c.room===room))db.classes.push({id:uid(),grade,room});
+  });
+  save();vStu();toast(`นำเข้าสำเร็จ: เพิ่ม ${add} · อัปเดต ${upd} · ข้าม ${skip}`,'g');
+}
+function exportStudents(){
+  if(!db.students.length)return toast('ไม่มีข้อมูล','a');
+  xlsx(db.students.map((s,i)=>({'ลำดับ':i+1,'รหัสนักเรียน':s.code,'ชื่อ-สกุล':s.name,'ระดับชั้น':s.grade,'ห้อง':s.room})),
+    'นักเรียน','รายชื่อนักเรียน.xlsx');toast('ส่งออกแล้ว','g');
+}
+
+/* ---------- 2.3 Exams ---------- */
+function vExam(){
+  $('#tMain').innerHTML=`
+  <div class="mhead"><div><h2>📝 จัดการข้อสอบ</h2><div class="m">สร้าง/แก้ไข/ลบ ข้อสอบ ตั้งเวลาสอบ และนำเข้าจาก Excel</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn green" onclick="tplExam()">⬇️ เทมเพลตข้อสอบ Excel</button>
+      <button class="btn primary" onclick="editExam()">➕ สร้างข้อสอบใหม่</button></div></div>
+  <div class="panel"><div class="tw" id="exTable"></div></div>`;
+  paintExams();
+}
+function paintExams(){
+  $('#exTable').innerHTML=db.exams.length?`<table><thead><tr><th>รหัส</th><th>ชื่อข้อสอบ</th><th>ชั้น</th><th>ข้อ</th><th>คะแนน</th><th>เวลา</th><th>ช่วงเวลาสอบ</th><th>สถานะ</th><th>ทำแล้ว</th><th></th></tr></thead><tbody>
+    ${db.exams.map(e=>{const st=examOpen(e);return`<tr>
+      <td><b>${esc(e.code)}</b></td><td>${esc(e.title)}</td><td>${esc(e.grade||'ทุกชั้น')}</td>
+      <td>${e.questions.length}</td><td>${totalScore(e)}</td><td>${e.duration} น.</td>
+      <td style="font-size:12.5px">${e.start||e.end?`${fmtDT(e.start)}<br>ถึง ${fmtDT(e.end)}`:'ไม่จำกัด'}</td>
+      <td><span class="tag ${st.ok?'g':'n'}">${st.ok?'เปิดสอบ':'ปิด'}</span></td>
+      <td>${db.results.filter(r=>r.examId===e.id).length}</td>
+      <td style="white-space:nowrap">
+        <button class="btn sm outline" onclick="editExam('${e.id}')">✏️ แก้ไข</button>
+        <button class="btn sm ${e.active?'amber':'green'}" onclick="toggleExam('${e.id}')">${e.active?'ปิด':'เปิด'}</button>
+        <button class="btn sm red" onclick="delExam('${e.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`
+    :`<div class="empty"><span class="ic">📄</span>ยังไม่มีข้อสอบ — กด “สร้างข้อสอบใหม่” หรือ นำเข้าจาก Excel</div>`;
+}
+function toggleExam(id){const e=db.exams.find(x=>x.id===id);e.active=!e.active;save();paintExams();toast(e.active?'เปิดสอบแล้ว':'ปิดสอบแล้ว','g');}
+function delExam(id){if(confirm('ลบข้อสอบนี้ (ผลสอบที่เกี่ยวข้องจะถูกลบด้วย)?')){
+  db.exams=db.exams.filter(e=>e.id!==id);db.results=db.results.filter(r=>r.examId!==id);save();paintExams();toast('ลบแล้ว','g');}}
+function editExam(id){
+  editing=id?JSON.parse(JSON.stringify(db.exams.find(e=>e.id===id))):
+    {id:uid(),code:'',title:'',subject:'',grade:'',duration:30,start:'',end:'',passPercent:50,
+     shuffleQ:true,shuffleC:true,showScore:db.settings.showScore,showAnswers:db.settings.showAnswers,
+     active:true,allowRetake:false,questions:[]};
+  renderExamEditor();
+}
+function renderExamEditor(){
+  const e=editing;
+  modal(e.code?'แก้ไขข้อสอบ':'สร้างข้อสอบใหม่',`
+  <div class="row">
+    <div><label class="f">รหัสวิชา/รหัสข้อสอบ *</label><input class="inp" id="eC" value="${esc(e.code)}" style="text-transform:uppercase" placeholder="MATH101"></div>
+    <div><label class="f">ชื่อวิชา</label><input class="inp" id="eS" value="${esc(e.subject)}" placeholder="คณิตศาสตร์"></div>
+  </div>
+  <label class="f">ชื่อข้อสอบ *</label><input class="inp" id="eT" value="${esc(e.title)}" placeholder="แบบทดสอบกลางภาค">
+  <div class="row">
+    <div><label class="f">ระดับชั้น</label><input class="inp" id="eG" list="dlG2" value="${esc(e.grade)}" placeholder="ว่าง = ทุกชั้น">
+      <datalist id="dlG2">${grades().map(g=>`<option>${esc(g)}</option>`).join('')}</datalist></div>
+    <div><label class="f">เวลาทำข้อสอบ (นาที)</label><input type="number" min="1" class="inp" id="eD" value="${e.duration}"></div>
+    <div><label class="f">เกณฑ์ผ่าน (%)</label><input type="number" min="0" max="100" class="inp" id="eP" value="${e.passPercent}"></div>
+  </div>
+  <div class="row">
+    <div><label class="f">เปิดสอบตั้งแต่</label><input type="datetime-local" class="inp" id="eSt" value="${e.start}"></div>
+    <div><label class="f">ปิดสอบเมื่อ</label><input type="datetime-local" class="inp" id="eEn" value="${e.end}"></div>
+  </div>
+  <div class="hint">เว้นว่างช่องวันเวลา = สอบได้ตลอดเวลาที่สถานะเป็น “เปิดสอบ”</div>
+  <div class="row" style="margin-top:12px">
+    <label class="chk"><input type="checkbox" id="eSQ" ${e.shuffleQ?'checked':''}> 🔀 สุ่มลำดับข้อสอบ</label>
+    <label class="chk"><input type="checkbox" id="eSC" ${e.shuffleC?'checked':''}> 🔀 สุ่มลำดับตัวเลือก</label>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <label class="chk"><input type="checkbox" id="eSS" ${e.showScore?'checked':''}> 📢 แสดงคะแนนทันทีหลังสอบ</label>
+    <label class="chk"><input type="checkbox" id="eSA" ${e.showAnswers?'checked':''}> 📖 แสดงเฉลยหลังสอบ</label>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <label class="chk"><input type="checkbox" id="eAC" ${e.active?'checked':''}> ✅ เปิดให้สอบ</label>
+    <label class="chk"><input type="checkbox" id="eRT" ${e.allowRetake?'checked':''}> 🔁 อนุญาตให้สอบซ้ำ</label>
+  </div>
+  <hr style="margin:18px 0;border:0;border-top:1px solid var(--line)">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <b>คำถาม (${e.questions.length} ข้อ · ${totalScore(e)} คะแนน)</b>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn sm primary" onclick="addQ('mc')">➕ ปรนัย</button>
+      <button class="btn sm teal" onclick="addQ('text')">➕ อัตนัย</button>
+      <button class="btn sm green" onclick="pickFile(importQuestions)">📥 นำเข้าข้อสอบ Excel</button>
+    </div>
+  </div>
+  <div id="qEditBox" style="margin-top:12px">${qEditHTML()}</div>`,
+  `<button class="btn outline" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="saveExam()">💾 บันทึกข้อสอบ</button>`,true);
+}
+function grab(){const e=editing;
+  e.code=$('#eC').value.trim().toUpperCase();e.subject=$('#eS').value.trim();e.title=$('#eT').value.trim();
+  e.grade=$('#eG').value.trim();e.duration=+$('#eD').value||30;e.passPercent=+$('#eP').value||0;
+  e.start=$('#eSt').value;e.end=$('#eEn').value;
+  e.shuffleQ=$('#eSQ').checked;e.shuffleC=$('#eSC').checked;e.showScore=$('#eSS').checked;
+  e.showAnswers=$('#eSA').checked;e.active=$('#eAC').checked;e.allowRetake=$('#eRT').checked;}
+function qEditHTML(){
+  const e=editing;
+  if(!e.questions.length)return `<div class="empty" style="padding:24px"><span class="ic">❓</span>ยังไม่มีคำถาม</div>`;
+  return e.questions.map((q,i)=>`<div class="qedit">
+    <div class="hd"><b>ข้อ ${i+1} <span class="tag ${q.type==='mc'?'b':'a'}">${q.type==='mc'?'ปรนัย':'อัตนัย'}</span></b>
+      <div style="display:flex;gap:5px">
+        <button class="btn sm outline" onclick="moveQ(${i},-1)">↑</button>
+        <button class="btn sm outline" onclick="moveQ(${i},1)">↓</button>
+        <button class="btn sm red" onclick="delQ(${i})">🗑</button></div></div>
+    <textarea class="inp" rows="2" placeholder="โจทย์คำถาม" oninput="qSet(${i},'text',this.value)">${esc(q.text)}</textarea>
+    ${q.type==='mc'?`<div style="margin-top:9px">
+      ${q.choices.map((c,ci)=>`<div class="choice-row">
+        <input type="radio" name="ans${i}" ${q.answer===ci?'checked':''} onchange="qSet(${i},'answer',${ci})" title="เลือกเป็นคำตอบที่ถูก">
+        <input class="inp" value="${esc(c)}" placeholder="ตัวเลือกที่ ${ci+1}" oninput="qChoice(${i},${ci},this.value)">
+        <button class="btn sm outline" onclick="delChoice(${i},${ci})">&times;</button></div>`).join('')}
+      <button class="btn sm outline" onclick="addChoice(${i})">➕ เพิ่มตัวเลือก</button>
+      <div class="hint">คลิกปุ่มวงกลมหน้าตัวเลือกเพื่อกำหนดเป็นเฉลย</div></div>`
+    :`<label class="f">เฉลย (ใช้ตรวจอัตโนมัติแบบตรงตัว หากไม่ตรงจะขึ้น “รอตรวจ”)</label>
+      <input class="inp" value="${esc(q.answer)}" oninput="qSet(${i},'answer',this.value)">`}
+    <div class="row" style="margin-top:9px"><div style="max-width:150px">
+      <label class="f">คะแนน</label><input type="number" min="0" step="0.5" class="inp" value="${q.score}" oninput="qSet(${i},'score',+this.value)"></div></div>
+  </div>`).join('');
+}
+function refreshQ(){$('#qEditBox').innerHTML=qEditHTML();}
+function addQ(t){grab();editing.questions.push(t==='mc'
+  ?{id:uid(),type:'mc',text:'',choices:['','','',''],answer:0,score:1}
+  :{id:uid(),type:'text',text:'',choices:[],answer:'',score:1});renderExamEditor();}
+function qSet(i,k,v){editing.questions[i][k]=v; if(k==='answer'&&editing.questions[i].type==='mc')refreshQ();}
+function qChoice(i,ci,v){editing.questions[i].choices[ci]=v;}
+function addChoice(i){grab();editing.questions[i].choices.push('');renderExamEditor();}
+function delChoice(i,ci){grab();const q=editing.questions[i];if(q.choices.length<=2)return toast('ต้องมีอย่างน้อย 2 ตัวเลือก','a');
+  q.choices.splice(ci,1);if(q.answer>=q.choices.length)q.answer=0;renderExamEditor();}
+function delQ(i){if(!confirm('ลบคำถามข้อนี้?'))return;grab();editing.questions.splice(i,1);renderExamEditor();}
+function moveQ(i,d){const j=i+d;if(j<0||j>=editing.questions.length)return;grab();
+  [editing.questions[i],editing.questions[j]]=[editing.questions[j],editing.questions[i]];renderExamEditor();}
+function saveExam(){
+  grab(); const e=editing;
+  if(!e.code||!e.title)return toast('กรอกรหัสวิชาและชื่อข้อสอบ','a');
+  if(db.exams.some(x=>x.code.toUpperCase()===e.code&&x.id!==e.id))return toast('รหัสวิชานี้ถูกใช้แล้ว','r');
+  if(!e.questions.length)return toast('ต้องมีคำถามอย่างน้อย 1 ข้อ','a');
+  if(e.questions.some(q=>!q.text.trim()))return toast('มีคำถามที่ยังไม่ได้กรอกโจทย์','a');
+  const i=db.exams.findIndex(x=>x.id===e.id);
+  if(i>=0)db.exams[i]=e; else db.exams.push(e);
+  save();closeModal();editing=null;paintExams();toast('บันทึกข้อสอบเรียบร้อย','g');
+}
+function tplExam(){
+  xlsx([
+    {'ประเภท':'ปรนัย','คำถาม':'ผลลัพธ์ของ 5 + 7 เท่ากับเท่าใด','ตัวเลือก1':'10','ตัวเลือก2':'11','ตัวเลือก3':'12','ตัวเลือก4':'13','ตัวเลือก5':'','เฉลย':3,'คะแนน':1},
+    {'ประเภท':'ปรนัย','คำถาม':'เมืองหลวงของไทยคือจังหวัดใด','ตัวเลือก1':'เชียงใหม่','ตัวเลือก2':'กรุงเทพมหานคร','ตัวเลือก3':'ภูเก็ต','ตัวเลือก4':'ขอนแก่น','ตัวเลือก5':'','เฉลย':2,'คะแนน':1},
+    {'ประเภท':'อัตนัย','คำถาม':'จงหาผลลัพธ์ของ 12 ÷ 4','ตัวเลือก1':'','ตัวเลือก2':'','ตัวเลือก3':'','ตัวเลือก4':'','ตัวเลือก5':'','เฉลย':'3','คะแนน':2}
+  ],'ข้อสอบ','เทมเพลต_นำเข้าข้อสอบ.xlsx');
+  toast('ดาวน์โหลดเทมเพลตแล้ว — คอลัมน์ “เฉลย” ของปรนัยใส่เลขตัวเลือก (1-5)','g');
+}
+function importQuestions(rows){
+  grab(); let n=0,skip=0;
+  rows.forEach(r=>{
+    const text=pick(r,['คำถาม','โจทย์','question']); if(!text){skip++;return;}
+    const typeRaw=pick(r,['ประเภท','type']).toLowerCase();
+    const isText=/อัตนัย|text|เขียน|subject/.test(typeRaw);
+    const score=+pick(r,['คะแนน','score','point'])||1;
+    const keyRaw=pick(r,['เฉลย','คำตอบ','answer','key']);
+    if(isText){editing.questions.push({id:uid(),type:'text',text,choices:[],answer:keyRaw,score});n++;return;}
+    const ch=[];for(let i=1;i<=8;i++){const c=pick(r,['ตัวเลือก'+i,'choice'+i,'ตัวเลือกที่ '+i,'option'+i]);if(c)ch.push(c);}
+    if(ch.length<2){skip++;return;}
+    let ans=0; const num=parseInt(keyRaw,10);
+    if(!isNaN(num)&&num>=1&&num<=ch.length)ans=num-1;
+    else{const up=keyRaw.trim().toUpperCase();
+      if(/^[A-H]$/.test(up))ans=up.charCodeAt(0)-65;
+      else{const f=ch.findIndex(c=>c.trim().toLowerCase()===keyRaw.trim().toLowerCase());ans=f>=0?f:0;}}
+    if(ans>=ch.length)ans=0;
+    editing.questions.push({id:uid(),type:'mc',text,choices:ch,answer:ans,score});n++;
+  });
+  renderExamEditor(); toast(`นำเข้าคำถาม ${n} ข้อ${skip?` · ข้าม ${skip} แถว`:''} (อย่าลืมกดบันทึก)`,'g');
+}
+
+/* ---------- 2.4 Export ---------- */
+function vExp(){
+  $('#tMain').innerHTML=`
+  <div class="mhead"><div><h2>📤 ส่งออกผลสอบเป็น Excel</h2><div class="m">เลือกเงื่อนไขแล้วดาวน์โหลดไฟล์ .xlsx ได้ทันที</div></div></div>
+  <div class="panel"><h3>ตัวเลือกการส่งออก</h3>
+    <div class="row">
+      <div><label class="f">วิชา / ข้อสอบ</label><select id="xEx" class="inp"><option value="">— ทุกวิชา —</option>
+        ${db.exams.map(e=>`<option value="${e.id}">${esc(e.code)} · ${esc(e.title)}</option>`).join('')}</select></div>
+      <div><label class="f">ระดับชั้น</label><select id="xGr" class="inp"><option value="">— ทุกระดับชั้น —</option>
+        ${grades().map(g=>`<option>${esc(g)}</option>`).join('')}</select></div>
+      <div><label class="f">ห้อง</label><select id="xRm" class="inp"><option value="">— ทุกห้อง —</option>
+        ${rooms().map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>
+    </div>
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn green" onclick="exportResults(false)">📊 ส่งออกสรุปคะแนน</button>
+      <button class="btn teal" onclick="exportResults(true)">📋 ส่งออกแบบรายข้อ (วิเคราะห์)</button>
+      <button class="btn outline" onclick="exportMissing()">🚫 รายชื่อผู้ที่ยังไม่ได้สอบ</button>
+    </div>
+    <div class="hint">ไฟล์สรุปประกอบด้วย: ลำดับ, รหัสนักเรียน, ชื่อ-สกุล, ชั้น/ห้อง, วิชา, คะแนนที่ได้, คะแนนเต็ม, ร้อยละ, สถานะผ่าน/ไม่ผ่าน, เวลาเริ่ม-ส่ง</div>
+  </div>
+  <div class="panel"><h3>👀 ตัวอย่างข้อมูลที่จะส่งออก</h3><div class="tw" id="xPrev"></div></div>`;
+  ['xEx','xGr','xRm'].forEach(id=>$('#'+id).onchange=xPrev); xPrev();
+}
+function xRows(){
+  const ex=$('#xEx').value,gr=$('#xGr').value,rm=$('#xRm').value;
+  return db.results.filter(r=>(!ex||r.examId===ex)&&(!gr||r.grade===gr)&&(!rm||r.room===rm))
+    .sort((a,b)=>a.grade.localeCompare(b.grade)||a.room.localeCompare(b.room)||b.percent-a.percent);
+}
+function xPrev(){
+  const rs=xRows();
+  $('#xPrev').innerHTML=rs.length?`<table><thead><tr><th>#</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>ชั้น/ห้อง</th><th>วิชา</th><th>คะแนน</th><th>%</th><th>ผล</th></tr></thead><tbody>
+    ${rs.slice(0,12).map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.studentCode)}</td><td>${esc(r.studentName)}</td><td>${esc(r.grade)}/${esc(r.room)}</td>
+    <td>${esc(r.examCode)}</td><td>${r.score}/${r.total}</td><td>${r.percent}%</td><td><span class="tag ${r.passed?'g':'r'}">${r.passed?'ผ่าน':'ไม่ผ่าน'}</span></td></tr>`).join('')}
+    </tbody></table>${rs.length>12?`<div class="hint">…และอีก ${rs.length-12} รายการ (รวม ${rs.length} รายการ)</div>`:''}`
+    :`<div class="empty"><span class="ic">📭</span>ไม่มีข้อมูลตามเงื่อนไข</div>`;
+}
+function exportResults(byItem){
+  const rs=xRows(); if(!rs.length)return toast('ไม่มีข้อมูลให้ส่งออก','a');
+  let rows;
+  if(!byItem){
+    rows=rs.map((r,i)=>({'ลำดับ':i+1,'รหัสนักเรียน':r.studentCode,'ชื่อ-สกุล':r.studentName,'ระดับชั้น':r.grade,'ห้อง':r.room,
+      'รหัสวิชา':r.examCode,'ชื่อข้อสอบ':r.examTitle,'คะแนนที่ได้':r.score,'คะแนนเต็ม':r.total,'ร้อยละ':r.percent,
+      'ผลการสอบ':r.passed?'ผ่าน':'ไม่ผ่าน','สถานะตรวจ':r.pending?'รอตรวจข้อเขียน':'ตรวจครบ',
+      'เวลาเริ่ม':fmtDT(r.startedAt),'เวลาส่ง':fmtDT(r.submittedAt),'สลับหน้าจอ(ครั้ง)':r.switches}));
+  }else{
+    rows=rs.map((r,i)=>{const o={'ลำดับ':i+1,'รหัสนักเรียน':r.studentCode,'ชื่อ-สกุล':r.studentName,'ชั้น/ห้อง':`${r.grade}/${r.room}`,'รหัสวิชา':r.examCode};
+      r.details.forEach((d,j)=>{o['ข้อ '+(j+1)]=d.got;});
+      o['รวม']=r.score;o['เต็ม']=r.total;o['ร้อยละ']=r.percent;o['ผล']=r.passed?'ผ่าน':'ไม่ผ่าน';return o;});
+  }
+  xlsx(rows,'ผลสอบ',`ผลสอบ_${new Date().toISOString().slice(0,10)}${byItem?'_รายข้อ':''}.xlsx`);
+  toast('ส่งออกไฟล์ Excel แล้ว','g');
+}
+function exportMissing(){
+  const exId=$('#xEx').value; if(!exId)return toast('กรุณาเลือกวิชาก่อน','a');
+  const ex=db.exams.find(e=>e.id===exId), gr=$('#xGr').value, rm=$('#xRm').value;
+  const done=new Set(db.results.filter(r=>r.examId===exId).map(r=>r.studentCode));
+  const miss=db.students.filter(s=>!done.has(s.code)&&(!gr||s.grade===gr)&&(!rm||s.room===rm)
+    &&(!ex.grade||ex.grade===s.grade));
+  if(!miss.length)return toast('นักเรียนทุกคนสอบครบแล้ว 🎉','g');
+  xlsx(miss.map((s,i)=>({'ลำดับ':i+1,'รหัสนักเรียน':s.code,'ชื่อ-สกุล':s.name,'ระดับชั้น':s.grade,'ห้อง':s.room,'วิชา':ex.code,'สถานะ':'ยังไม่ได้สอบ'})),
+    'ยังไม่ได้สอบ',`ยังไม่ได้สอบ_${ex.code}.xlsx`);
+  toast(`พบ ${miss.length} คนที่ยังไม่ได้สอบ`,'a');
+}
+
+/* ---------- 2.5 + 2.6 Display & Shuffle config ---------- */
+function vCfg(){
+  $('#tMain').innerHTML=`
+  <div class="mhead"><div><h2>🎛️ ตั้งค่าการแสดงผลคะแนน &amp; การสุ่มข้อสอบ</h2>
+    <div class="m">ตั้งค่าเริ่มต้นของระบบ และปรับรายวิชาได้แบบรวดเร็ว</div></div></div>
+  <div class="panel"><h3>⚙️ ค่าเริ่มต้นสำหรับข้อสอบใหม่</h3>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="gSS" ${db.settings.showScore?'checked':''} onchange="db.settings.showScore=this.checked;save();toast('บันทึกแล้ว','g')"> 📢 แสดงคะแนนทันทีหลังสอบ</label>
+      <label class="chk"><input type="checkbox" id="gSA" ${db.settings.showAnswers?'checked':''} onchange="db.settings.showAnswers=this.checked;save();toast('บันทึกแล้ว','g')"> 📖 แสดงเฉลยหลังสอบ</label>
+    </div>
+    <div class="hint">มีผลกับข้อสอบที่สร้างใหม่ ส่วนข้อสอบเดิมปรับได้ในตารางด้านล่าง</div>
+  </div>
+  <div class="panel"><h3>📝 ตั้งค่ารายวิชา (มีผลทันที)</h3>
+    <div class="tw">${db.exams.length?`<table><thead><tr><th>รหัส</th><th>ชื่อข้อสอบ</th>
+      <th>แสดงคะแนน</th><th>แสดงเฉลย</th><th>สุ่มข้อ</th><th>สุ่มตัวเลือก</th><th>สอบซ้ำ</th><th>เกณฑ์ผ่าน</th></tr></thead><tbody>
+      ${db.exams.map(e=>`<tr><td><b>${esc(e.code)}</b></td><td>${esc(e.title)}</td>
+        ${['showScore','showAnswers','shuffleQ','shuffleC','allowRetake'].map(k=>
+          `<td><input type="checkbox" style="width:18px;height:18px;accent-color:#4f46e5" ${e[k]?'checked':''} onchange="setExamFlag('${e.id}','${k}',this.checked)"></td>`).join('')}
+        <td><input type="number" min="0" max="100" class="inp" style="width:80px;padding:6px" value="${e.passPercent}" onchange="setExamPass('${e.id}',this.value)"></td>
+      </tr>`).join('')}</tbody></table>`:`<div class="empty"><span class="ic">📄</span>ยังไม่มีข้อสอบ</div>`}</div>
+    <div class="hint">🔀 การสุ่มจะทำงานแยกกันในผู้เข้าสอบแต่ละคน ทำให้ลำดับข้อ/ตัวเลือกไม่เหมือนกัน ช่วยป้องกันการลอกคำตอบ</div>
+  </div>`;
+}
+function setExamFlag(id,k,v){db.exams.find(e=>e.id===id)[k]=v;save();toast('บันทึกแล้ว','g');}
+function setExamPass(id,v){const e=db.exams.find(x=>x.id===id);e.passPercent=Math.max(0,Math.min(100,+v||0));
+  db.results.filter(r=>r.examId===id).forEach(r=>r.passed=r.percent>=e.passPercent);save();toast('อัปเดตเกณฑ์ผ่านแล้ว','g');}
+
+/* ---------- 2.7 System settings ---------- */
+function vSys(){
+  const s=db.settings;
+  $('#tMain').innerHTML=`
+  <div class="mhead"><div><h2>🏫 ตั้งค่าระบบ</h2><div class="m">ข้อมูลโรงเรียน บัญชีผู้ดูแล และการสำรองข้อมูล</div></div></div>
+  <div class="panel"><h3>🏫 ข้อมูลโรงเรียน</h3>
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <div style="width:96px;height:96px;border-radius:18px;background:var(--brand-l);display:grid;place-items:center;font-size:40px;overflow:hidden" id="lgPrev">
+        ${s.logo?`<img src="${s.logo}" style="width:100%;height:100%;object-fit:cover">`:'🎓'}</div>
+      <div style="flex:1;min-width:230px">
+        <label class="f">ชื่อโรงเรียน</label><input id="cfName" class="inp" value="${esc(s.school)}">
+        <div class="toolbar" style="margin-top:12px">
+          <button class="btn outline sm" onclick="document.getElementById('logoPick').click()">🖼 อัปโหลดโลโก้</button>
+          ${s.logo?`<button class="btn red sm" onclick="db.settings.logo='';save();paintBrand();vSys()">ลบโลโก้</button>`:''}
+          <button class="btn primary sm" onclick="saveSchool()">💾 บันทึก</button>
+        </div></div></div></div>
+  <div class="panel"><h3>🔐 บัญชีครู/ผู้ดูแลระบบ</h3>
+    <div class="row">
+      <div><label class="f">ชื่อผู้ใช้</label><input id="cfU" class="inp" value="${esc(s.user)}"></div>
+      <div><label class="f">รหัสผ่านใหม่</label><input id="cfP" type="password" class="inp" placeholder="เว้นว่าง = ไม่เปลี่ยน"></div>
+      <div><label class="f">ยืนยันรหัสผ่านใหม่</label><input id="cfP2" type="password" class="inp"></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn primary" onclick="savePass()">💾 บันทึกบัญชี</button></div>
+  </div>
+  <div class="panel"><h3>💾 สำรอง / กู้คืนข้อมูล</h3>
+    <div class="toolbar">
+      <button class="btn green" onclick="backup()">⬇️ สำรองข้อมูล (.json)</button>
+      <button class="btn teal" onclick="document.getElementById('jsonPick').click()">⬆️ กู้คืนข้อมูล</button>
+      <button class="btn red" onclick="resetAll()">⚠️ ล้างข้อมูลทั้งหมด</button>
+    </div>
+    <div class="hint">ข้อมูลถูกเก็บใน localStorage ของเบราว์เซอร์เครื่องนี้ ควรสำรองไฟล์ไว้เป็นประจำ<br>
+    ปัจจุบัน: นักเรียน ${db.students.length} คน · ข้อสอบ ${db.exams.length} ชุด · ผลสอบ ${db.results.length} รายการ</div>
+  </div>`;
+}
+function saveSchool(){db.settings.school=$('#cfName').value.trim()||'โรงเรียน';save();paintBrand();toast('บันทึกข้อมูลโรงเรียนแล้ว','g');}
+function savePass(){
+  const u=$('#cfU').value.trim(),p=$('#cfP').value,p2=$('#cfP2').value;
+  if(!u)return toast('กรอกชื่อผู้ใช้','a');
+  if(p||p2){if(p!==p2)return toast('รหัสผ่านทั้งสองช่องไม่ตรงกัน','r');
+    if(p.length<4)return toast('รหัสผ่านต้องยาวอย่างน้อย 4 ตัวอักษร','a');db.settings.pass=p;}
+  db.settings.user=u;save();toast('บันทึกบัญชีเรียบร้อย','g');vSys();
+}
+$('#logoPick').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=ev=>{db.settings.logo=ev.target.result;save();paintBrand();vSys();toast('อัปโหลดโลโก้แล้ว','g');};r.readAsDataURL(f);};
+function backup(){const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`สำรองข้อมูลระบบสอบ_${new Date().toISOString().slice(0,10)}.json`;a.click();toast('สำรองข้อมูลแล้ว','g');}
+$('#jsonPick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.settings)throw new Error('รูปแบบไม่ถูกต้อง');
+    if(confirm('กู้คืนข้อมูลจะเขียนทับข้อมูลปัจจุบันทั้งหมด ยืนยัน?')){db=d;save();paintBrand();tab('dash');toast('กู้คืนข้อมูลสำเร็จ','g');}}
+    catch(err){toast('ไฟล์ไม่ถูกต้อง: '+err.message,'r');}};r.readAsText(f);};
+function resetAll(){if(confirm('ล้างข้อมูลทั้งหมดและกลับสู่ค่าเริ่มต้น?')&&confirm('ยืนยันอีกครั้ง — ข้อมูลจะหายถาวร'))
+  {localStorage.removeItem(KEY);load();paintBrand();tab('dash');toast('รีเซ็ตระบบแล้ว','g');}}
+
+/* ================= INIT ================= */
+load(); paintBrand(); paintOpenList();
+window.addEventListener('resize',()=>{if(curTab==='dash'&&$('#cv1')){drawDist();drawRoom();}});
+</script>
+</body>
+</html>
